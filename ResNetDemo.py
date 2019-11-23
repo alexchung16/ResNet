@@ -11,7 +11,7 @@ from tensorflow.contrib.slim.python.slim.nets import resnet_v2
 
 
 
-images = tf.Variable(initial_value=tf.random_uniform(shape=(5, 299, 299, 3), minval=0, maxval=3), dtype=tf.float32)
+images = tf.Variable(initial_value=tf.random_uniform(shape=(5, 224, 224, 3), minval=0, maxval=3), dtype=tf.float32)
 num_classes = tf.constant(value=5, dtype=tf.int32)
 # is_training = True
 
@@ -26,4 +26,5 @@ if __name__ == "__main__":
             logits, end_points = resnet_v2.resnet_v2_50(images, num_classes=num_classes.eval(), is_training=True)
 
         for var in tf.model_variables():
-            print(var.name)
+            print(var.name, var.shape)
+
