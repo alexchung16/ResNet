@@ -259,9 +259,9 @@ class ResNet50():
         :return:
         """
         # define trainable variable
-        trainable_variable = None
         # trainable_scope = self.trainable_scope
-        trainable_scope = ['resnet_v2_50/Logits']
+        # trainable_scope = ['resnet_v2_50/Logits']
+        trainable_scope = []
         if self.is_pretrain:
             trainable_variable = []
             if trainable_scope is not None:
