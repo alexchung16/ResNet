@@ -21,13 +21,13 @@ test_path = os.path.join(original_dataset_dir, 'test')
 record_file = os.path.join(tfrecord_dir, 'image.tfrecords')
 model_path = os.path.join(os.getcwd(), 'model')
 model_name = os.path.join(model_path, 'resnet_50.pb')
-pretrain_model_dir = '/home/alex/Documents/pretraing_model/resnet/resnet_50/resnet_50.ckpt'
+pretrain_model_dir = '/home/alex/Documents/pretraing_model/resnet/resnet_50/resnet_v2_50.ckpt'
 logs_dir = os.path.join(os.getcwd(), 'logs')
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('height', 299, 'Number of height size.')
-flags.DEFINE_integer('width', 299, 'Number of width size.')
+flags.DEFINE_integer('height', 224, 'Number of height size.')
+flags.DEFINE_integer('width', 224, 'Number of width size.')
 flags.DEFINE_integer('depth', 3, 'Number of depth size.')
 flags.DEFINE_integer('num_classes', 5, 'Number of image class.')
 flags.DEFINE_integer('epoch', 30, 'Number of epoch size.')
@@ -38,7 +38,7 @@ flags.DEFINE_float('decay_rate', 0.99, 'Number of learning decay rate.')
 # flags.DEFINE_bool('spacial_squeeze', True, 'if True, execute squeeze.')
 flags.DEFINE_integer('num_epoch_per_decay', 2, 'Number epoch after each leaning rate decapy.')
 flags.DEFINE_float('keep_prob', 0.8, 'Number of probability that each element is kept.')
-flags.DEFINE_float('regular_decay', 0.0001, 'Number of weight decay with regular')
+flags.DEFINE_float('weight_decay', 0.0001, 'Number of weight decay with regular')
 flags.DEFINE_float('batch_norm_decay', 0.997, 'Number of batch norm decay.')
 flags.DEFINE_float('batch_norm_epsilon', 1e-5, 'Number of batch norm epsilon.')
 flags.DEFINE_bool('batch_norm_scale', True, 'if True, use gamma for update.')
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     # add scalar value to summary protocol buffer
     tf.summary.scalar('loss', resnet_50.loss)
-    tf.summary.scalar('accuracy', resnet_50.train_accuracy)
+    tf.summary.scalar('accuracy', resnet_50.accuracy)
 
     # networkStructureTest(batch_size=batch_size)
     images, labels, filenames = reader_tfrecord(record_file=FLAGS.train_dir,
@@ -150,14 +150,16 @@ if __name__ == "__main__":
             print(var.name)
 
         # get and add histogram to summary protocol buffer
-        logit_weight = graph.get_tensor_by_name(name='InceptionV3/Logits/Conv2d_1c_1x1/weights:0')
+        logit_weight = graph.get_tensor_by_name(name='resnet_v2_50/logits/weights:0')
         tf.summary.histogram(name='logits/weight', values=logit_weight)
+        logit_biase = graph.get_tensor_by_name(name='resnet_v2_50/logits/biases:0')
+        tf.summary.histogram(name='logits/biases', values=logit_biase)
         # merges all summaries collected in the default graph
         summary_op = tf.summary.merge_all()
         # load pretrain model
         if FLAGS.is_pretrain:
             # remove variable of fc8 layer from pretrain model
-            custom_scope = ['InceptionV3/Logits/Conv2d_1c_1x1']
+            custom_scope = ['resnet_v2_50/logits']
             for scope in custom_scope:
                 variables = tf.model_variables(scope=scope)
                 [model_variable.remove(var) for var in variables]
@@ -190,8 +192,8 @@ if __name__ == "__main__":
 
                 # save model
                 # get op name for save model
-                input_op = inception_v3.raw_input_data.name
-                logit_op = inception_v3.logits.name
+                input_op = resnet_50.raw_input_data.name
+                logit_op = resnet_50.logits.name
                 # convert variable to constant
                 def_graph = tf.get_default_graph().as_graph_def()
                 constant_graph = tf.graph_util.convert_variables_to_constants(sess, def_graph,
