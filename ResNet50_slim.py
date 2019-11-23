@@ -90,7 +90,7 @@ class ResNet50():
                     normalizer_fn=slim.layers.batch_norm,
                     normalizer_params=batch_norm_params):
                 with slim.arg_scope([slim.batch_norm], **batch_norm_params):
-                    with slim.arg_scope([slim.max_pool2d], padding='SAME') as arg_sc:
+                    with slim.arg_scope([slim.max_pool2d], padding='SAME'):
                         with slim.arg_scope([slim.batch_norm], is_training=is_training):
                             net = self.resnet50_base(inputs=inputs, scope=sc)
                             # batch normalize
@@ -160,24 +160,24 @@ class ResNet50():
         :param scope:
         :return:
         """
+        with tf.variable_scope(scope, values=[inputs]) :
+            with tf.variable_scope('bottleneck_v2', default_name='bottleneck_v2', values=[inputs]):
+                    # get filters num
+                    filter0, filter1, filter2 = filters
+                    preact = slim.batch_norm(inputs=inputs, activation_fn=tf.nn.relu, scope='preact')
+                    # shortcut net
+                    shortcut = slim.conv2d(inputs=preact, num_outputs=filter2, kernel_size=[1, 1], stride=stride,
+                                           normalizer_fn=None, activation_fn=None, padding='SAME',  scope='shortcut')
+                    # stack net
+                    net = slim.conv2d(inputs=preact, num_outputs=filter0, kernel_size=[1, 1], stride=1, padding='SAME',
+                                      scope='conv1')
+                    net = self.conv2d_same(inputs=net, num_outputs=filter1, kernel_size=[3, 3], stride=stride, rate=rate,
+                                           scope='conv2')
+                    net = slim.conv2d(inputs=net, num_outputs=filter2, kernel_size=[1, 1], stride=1, normalizer_fn=None,
+                                      activation_fn=None, padding='SAME', scope='conv3')
 
-        with tf.variable_scope(scope, default_name='bottleneck_v2', values=[inputs]):
-            # get filters num
-            filter0, filter1, filter2 = filters
-            preact = slim.batch_norm(inputs=inputs, activation_fn=tf.nn.relu, scope='preact')
-            # shortcut net
-            shortcut = slim.conv2d(inputs=preact, num_outputs=filter2, kernel_size=[1, 1], stride=stride,
-                                   normalizer_fn=None, activation_fn=None, padding='SAME',  scope='shortcut')
-            # stack net
-            net = slim.conv2d(inputs=preact, num_outputs=filter0, kernel_size=[1, 1], stride=1, padding='SAME',
-                              scope='conv1')
-            net = self.conv2d_same(inputs=net, num_outputs=filter1, kernel_size=[3, 3], stride=stride, rate=rate,
-                                   scope='conv2')
-            net = slim.conv2d(inputs=net, num_outputs=filter2, kernel_size=[1, 1], stride=1, normalizer_fn=None,
-                              activation_fn=None, padding='SAME', scope='conv3')
-
-            output = shortcut + net
-            return output
+                    output = shortcut + net
+                    return output
 
     def identity_block(self, inputs, filters, stride=1, rate=1, scope=None):
         """
@@ -189,23 +189,24 @@ class ResNet50():
         :param scope:
         :return:
         """
-        with tf.variable_scope(scope, default_name='bottleneck_v2', values=[inputs]):
-            with slim.arg_scope([slim.conv2d], stride=1, padding='SAME'):
-                # get filters num
-                filter0, filter1, filter2 = filters
-                preact = slim.batch_norm(inputs=inputs, activation_fn=tf.nn.relu, scope='preact')
-                # shortcut net
-                shortcut = self.subsample(inputs=inputs, factor=stride, scope='shortcut')
+        with tf.variable_scope(scope, default_name='unit', values=[inputs]):
+            with tf.variable_scope('bottleneck_v2', default_name='bottleneck_v2', values=[inputs]):
+                with slim.arg_scope([slim.conv2d], stride=1, padding='SAME'):
+                    # get filters num
+                    filter0, filter1, filter2 = filters
+                    preact = slim.batch_norm(inputs=inputs, activation_fn=tf.nn.relu, scope='preact')
+                    # shortcut net
+                    shortcut = self.subsample(inputs=inputs, factor=stride, scope='shortcut')
 
-                # stack net
-                net = slim.conv2d(inputs=preact, num_outputs=filter0, kernel_size=[1, 1], stride=1, padding='SAME',
-                                  scope='conv1')
-                net = self.conv2d_same(inputs=net, num_outputs=filter1, kernel_size=[3, 3], stride=stride, rate=rate,
-                                       scope='conv2')
-                net = slim.conv2d(inputs=net, num_outputs=filter2, kernel_size=[1, 1], stride=1, normalizer_fn=None,
-                                  activation_fn=None, padding='SAME', scope='conv3')
-                output = shortcut + net
-                return output
+                    # stack net
+                    net = slim.conv2d(inputs=preact, num_outputs=filter0, kernel_size=[1, 1], stride=1, padding='SAME',
+                                      scope='conv1')
+                    net = self.conv2d_same(inputs=net, num_outputs=filter1, kernel_size=[3, 3], stride=stride, rate=rate,
+                                           scope='conv2')
+                    net = slim.conv2d(inputs=net, num_outputs=filter2, kernel_size=[1, 1], stride=1, normalizer_fn=None,
+                                      activation_fn=None, padding='SAME', scope='conv3')
+                    output = shortcut + net
+                    return output
 
 
     def conv2d_same(self, inputs, num_outputs, kernel_size, stride, rate=1, scope=None):
