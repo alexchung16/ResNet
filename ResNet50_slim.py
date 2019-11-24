@@ -105,7 +105,7 @@ class ResNet50():
                             # squeeze
                             logits = tf.squeeze(input=logits, axis=[1, 2], name='SpatialSqueeze')
                             # softmax
-                            prop = slim.softmax(logits, scope='predict')
+                            prop = slim.softmax(logits, scope='Predict')
                             return prop
 
     def resnet50_base(self, inputs, scope='resnet_v2_50'):
