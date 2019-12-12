@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 # from Inception.Inception_v3 import InceptionV3
 from ResNet.ResNet50_slim import ResNet50
-from TFRecordProcessing.parse_TFRecord import reader_tfrecord, get_num_samples
+from DataProcess.read_TFRecord import reader_tfrecord, get_num_samples
 from tensorflow.python.framework import graph_util
 #
 original_dataset_dir = '/home/alex/Documents/datasets/flower_photos_separate'
