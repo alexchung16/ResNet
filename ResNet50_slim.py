@@ -33,13 +33,18 @@ class ResNet50():
         self.batch_norm_epsilon = batch_norm_epsilon
         self.batch_norm_scale = batch_norm_scale
         self.batch_norm_fused = batch_norm_fused
+        self._R_MEAN = 123.68
+        self._G_MEAN = 116.78
+        self._B_MEAN = 103.94
         # self.initializer = tf.random_normal_initializer(stddev=0.1)
         # add placeholder (X,label)
-        self.raw_input_data = tf.compat.v1.placeholder(tf.float32,
-                                                       shape=[None, input_shape[0], input_shape[1], input_shape[2]],
+        self.raw_input_data = tf.compat.v1.placeholder(tf.float32,shape=[None, input_shape[0], input_shape[1], input_shape[2]],
                                                        name="input_images")
+        self.raw_input_data = self.mean_subtraction(image=self.raw_input_data,
+                                                    means=[self._R_MEAN, self._G_MEAN, self._B_MEAN])
         # y [None,num_classes]
         self.raw_input_label = tf.compat.v1.placeholder(tf.float32, shape=[None, self.num_classes], name="class_label")
+
         self.is_training = tf.compat.v1.placeholder_with_default(input=False, shape=(), name='is_training')
 
         # self.global_step = tf.Variable(0, trainable=False, name="global_step")
@@ -309,6 +314,20 @@ class ResNet50():
             self.is_training: is_training
         }
         return feed_dict
+
+    def mean_subtraction(self, image, means):
+        """
+        subtract the means form each image channel (white image)
+        :param image:
+        :param mean:
+        :return:
+        """
+        num_channels = image.get_shape()[-1]
+        image = tf.cast(image, dtype=tf.float32)
+        channels = tf.split(value=image, num_or_size_splits=num_channels, axis=3)
+        for n in range(num_channels):
+            channels[n] -= means[n]
+        return tf.concat(values=channels, axis=3, name='concat_channel')
 
 
 
