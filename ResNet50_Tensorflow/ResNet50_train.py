@@ -9,7 +9,7 @@ import os
 import numpy as np
 import tensorflow as tf
 # from Inception.Inception_v3 import InceptionV3
-from ResNet.ResNet50_slim import ResNet50
+from ResNet50_Tensorflow.ResNet50_slim import ResNet50
 from DataProcess.read_TFRecord import reader_tfrecord, get_num_samples
 from tensorflow.python.framework import graph_util
 #
