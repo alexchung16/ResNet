@@ -23,10 +23,10 @@ model_pb_path = os.path.join('../outputs/model', 'model.pb')
 
 image_path = './demo/roses_0.jpg'
 
-means =  [123.68, 116.779, 103.939]
+
 class_name = ['daisy','dandelion', 'roses', 'sunflowers', 'tulips']
 
-def image_preprocess(img_path, target_size=(224, 224), color_mode='rgb'):
+def image_preprocess(img_path, target_size=(299, 299), color_mode='rgb'):
     """
 
     :param img_path:
@@ -46,20 +46,21 @@ def image_preprocess(img_path, target_size=(224, 224), color_mode='rgb'):
     if color_mode == 'rgb':
         if img.mode != 'RGB':
             img = img.convert('RGB')
-    # resize
+
+        # resize
     width_height_tuple = (target_size[1], target_size[0])
     if img.size != width_height_tuple:
         img = img.resize(width_height_tuple, resample=pil_image.NEAREST)
 
     # convert tensor to array
-    img_array = np.asarray(img, dtype=np.float32)
+    img = np.asarray(img, dtype=np.float32)
 
-    # white process
-    for channel in range(3):
-        img_array[:, :, channel] -= means[channel]
+    # convert image scale to (-1, 1)
+    scale = 1 / 128.
+    img = np.multiply(img, scale) - 1
 
     # expand dimension
-    img_batch = np.expand_dims(img_array, axis=0)
+    img_batch = np.expand_dims(img, axis=0)
 
     return img_batch
 
@@ -84,7 +85,7 @@ def visualize_predict(predict, class_name):
     plt.show()
 
 
-def inference_with_ckpt(model_path, image_path, target_size=(224, 224)):
+def inference_with_ckpt(model_path, image_path, target_size=(299, 299)):
     """
 
     :param model_path:
@@ -114,7 +115,7 @@ def inference_with_ckpt(model_path, image_path, target_size=(224, 224)):
         return prob
 
 
-def predict_with_pb(model_path, image_path, target_size=(224, 224)):
+def predict_with_pb(model_path, image_path, target_size=(299, 299)):
     """
     model read and predict
     :param model_path:

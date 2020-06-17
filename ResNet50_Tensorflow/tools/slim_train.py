@@ -27,8 +27,8 @@ model_dir = save_dir = os.path.join('../', 'outputs', 'model')
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('height', 224, 'Number of height size.')
-flags.DEFINE_integer('width', 224, 'Number of width size.')
+flags.DEFINE_integer('height', 299, 'Number of height size.')
+flags.DEFINE_integer('width', 299, 'Number of width size.')
 flags.DEFINE_integer('depth', 3, 'Number of depth size.')
 flags.DEFINE_integer('num_classes', 5, 'Number of image class.')
 flags.DEFINE_integer('batch_size', 32, 'Batch size Must divide evenly into the dataset sizes.')
