@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import tensorflow.contrib.slim as slim
 from tensorflow.python_io import tf_record_iterator
 from tensorflow.python.ops import control_flow_ops
-from DataProcess.vgg_preprocessing import preprocess_image
+from DataProcess.inception_preprocessing import preprocess_image
 
 dataset_dir = '/home/alex/Documents/dataset/flower_tfrecord'
 
@@ -59,7 +59,7 @@ def parse_example(serialized_sample, target_shape, class_depth, is_training=Fals
     # image augmentation
     # image = augmentation_image(image=image, image_shape=input_shape, preprocessing_type=preprocessing_type,
     #                            fast_mode=fast_mode, is_training=is_training,)
-    image = preprocess_image(image=image, output_height=target_shape[0], output_width=target_shape[1],
+    image = preprocess_image(image=image, height=target_shape[0], width=target_shape[1],
                              is_training=is_training)
     # onehot label
     label = tf.one_hot(indices=label, depth=class_depth)
